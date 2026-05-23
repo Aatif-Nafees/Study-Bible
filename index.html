@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Bible · Aatif Nafees</title>
+  <style>
+    :root {
+      --bg: #07070E; --surface: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
+      --gold: #E8C547; --teal: #3ECFCF; --red: #E85D47;
+      --text: #F0EDE8; --muted: #777; --dim: #444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Georgia','Times New Roman',serif; min-height: 100vh; }
+    .header { padding: 40px 24px 0; max-width: 780px; margin: 0 auto; }
+    .eyebrow { font-size: 10px; letter-spacing: 4px; color: var(--dim); text-transform: uppercase; margin-bottom: 14px; }
+    h1 { font-size: clamp(24px,5vw,38px); font-weight: 400; line-height: 1.25; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .stats { display: flex; gap: 20px; margin-top: 16px; flex-wrap: wrap; }
+    .stat-val { font-size: 18px; color: var(--gold); font-family: monospace; }
+    .stat-lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+    .tab-bar { max-width: 780px; margin: 28px auto 0; padding: 0 24px; }
+    .tab-bar-inner { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    .tab-bar-inner::-webkit-scrollbar { display: none; }
+    .tab-btn { padding: 9px 16px; border-radius: 8px; border: none; white-space: nowrap; background: var(--surface); color: var(--muted); cursor: pointer; font-size: 12px; font-family: monospace; letter-spacing: 0.5px; transition: all .15s; font-weight: 400; }
+    .tab-btn.active { background: var(--gold); color: var(--bg); font-weight: 700; }
+    .content { max-width: 780px; margin: 0 auto; padding: 24px 24px 60px; }
+    .callout { border-radius: 14px; padding: 22px; margin-bottom: 24px; }
+    .callout-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; }
+    .callout-title { font-size: 15px; margin-bottom: 8px; }
+    .callout-body { font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .phase-card { display: flex; gap: 20px; margin-bottom: 16px; padding: 22px; background: var(--surface); border-radius: 14px; border: 1px solid var(--border); }
+    .phase-num { font-size: 32px; font-family: monospace; opacity: .4; line-height: 1; min-width: 40px; }
+    .phase-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+    .phase-period { font-size: 11px; font-family: monospace; padding: 3px 10px; border-radius: 100px; }
+    .cred-card { margin-bottom: 10px; background: var(--surface); border-radius: 14px; border: 1px solid var(--border); cursor: pointer; overflow: hidden; transition: border-color .2s; }
+    .cred-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .cred-tags { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+    .tag-pill { padding: 2px 10px; border-radius: 100px; font-size: 10px; letter-spacing: 1.5px; font-family: monospace; }
+    .cred-name { font-size: 15px; margin-bottom: 4px; }
+    .cred-brand { font-size: 12px; color: var(--muted); }
+    .cred-body { padding: 0 20px 20px; border-top: 1px solid var(--border); display: none; }
+    .cred-body.open { display: block; }
+    .sect-label { font-size: 10px; letter-spacing: 2px; color: var(--dim); margin-bottom: 6px; margin-top: 16px; text-transform: uppercase; }
+    .cred-link { font-size: 13px; color: var(--teal); font-family: monospace; text-decoration: none; word-break: break-all; }
+    .cred-link:hover { text-decoration: underline; }
+    .budget-wrap { padding: 16px 20px; background: var(--surface); border-radius: 10px; margin-bottom: 24px; border: 1px solid var(--border); }
+    .budget-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .budget-track { height: 6px; background: var(--border); border-radius: 100px; overflow: hidden; }
+    .budget-fill { height: 100%; background: linear-gradient(90deg,var(--gold),var(--teal)); border-radius: 100px; }
+    .month-card { margin-bottom: 10px; background: var(--surface); border-radius: 14px; border: 1px solid var(--border); cursor: pointer; overflow: hidden; }
+    .month-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .month-body { border-top: 1px solid var(--border); display: none; }
+    .month-body.open { display: block; }
+    .time-slot { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+    .slot-label { font-size: 11px; letter-spacing: 2px; font-family: monospace; margin-bottom: 12px; }
+    .slot-item { display: flex; gap: 10px; margin-bottom: 10px; }
+    .slot-arrow { font-size: 10px; margin-top: 4px; min-width: 8px; }
+    .slot-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .sat-block { padding: 14px 20px; border-bottom: 1px solid var(--border); background: rgba(129,140,248,.05); }
+    .sun-block { padding: 14px 20px; border-bottom: 1px solid var(--border); background: rgba(249,115,22,.05); }
+    .win-row { padding: 14px 20px; display: flex; gap: 8px; align-items: center; }
+    .sched-slot { margin-bottom: 16px; padding: 24px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); }
+    .rhythm-card { padding: 22px; background: var(--surface); border-radius: 14px; border: 1px solid var(--border); margin-bottom: 16px; }
+    .rhythm-row { display: flex; gap: 16px; margin-bottom: 14px; align-items: flex-start; }
+    .li-card { padding: 22px; background: rgba(62,207,207,.06); border-radius: 14px; border: 1px solid rgba(62,207,207,.15); }
+    .li-row { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+    .income-card { padding: 24px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; }
+    .income-row { margin-bottom: 16px; }
+    .income-meta { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .income-track { height: 5px; background: var(--border); border-radius: 100px; overflow: hidden; }
+    .income-fill { height: 100%; border-radius: 100px; }
+    .iitm-card { padding: 24px; background: rgba(249,115,22,.07); border-radius: 16px; border: 1px solid rgba(249,115,22,.2); margin-bottom: 20px; }
+    .subject-card { padding: 12px 14px; background: rgba(0,0,0,.3); border-radius: 8px; margin-bottom: 10px; }
+    .subject-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .iitm-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .iitm-meta-card { padding: 12px; background: rgba(0,0,0,.3); border-radius: 8px; }
+    .dev-card { padding: 24px; background: rgba(192,132,252,.07); border-radius: 16px; border: 1px solid rgba(192,132,252,.2); margin-bottom: 20px; }
+    .traj-row { display: flex; gap: 14px; margin-bottom: 12px; padding: 14px; background: rgba(0,0,0,.2); border-radius: 8px; }
+    .traj-phase { min-width: 90px; flex-shrink: 0; }
+    .toolkit-card { padding: 22px; background: var(--surface); border-radius: 14px; border: 1px solid var(--border); margin-bottom: 16px; }
+    .toolkit-pill { padding: 6px 14px; border-radius: 100px; border: 1px solid rgba(192,132,252,.3); color: #C084FC; font-size: 12px; font-family: monospace; display: inline-block; margin: 4px; }
+    .companies-card { padding: 22px; background: var(--surface); border-radius: 14px; border: 1px solid var(--border); }
+    .company-pill { padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); color: var(--muted); font-size: 12px; font-family: monospace; display: inline-block; margin: 4px; }
+    .triggers-card { padding: 22px; background: var(--surface); border-radius: 14px; border: 1px solid var(--border); margin-bottom: 20px; }
+    .trigger-row { display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start; }
+    .trigger-label { padding: 3px 10px; border-radius: 100px; font-size: 11px; font-family: monospace; min-width: 80px; text-align: center; flex-shrink: 0; }
+    .headline-card { margin-bottom: 20px; padding: 22px; background: linear-gradient(135deg,rgba(232,197,71,.1),rgba(62,207,207,.05)); border-radius: 14px; border: 1px solid rgba(232,197,71,.2); }
+    .north-star { padding: 22px; background: rgba(255,255,255,.02); border-radius: 14px; border: 1px dashed var(--dim); }
+    .eyebrow-sm { font-size: 10px; letter-spacing: 3px; color: var(--dim); margin-bottom: 16px; text-transform: uppercase; }
+    @media(max-width:480px){.phase-card{flex-direction:column;gap:10px}.iitm-meta-grid{grid-template-columns:1fr}.traj-row{flex-direction:column;gap:8px}}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Study Bible · Aatif Nafees · Gurugram</div>
+  <h1>The Revenue<br><span style="color:var(--gold)">Marketing Engineer</span><br>Masterplan</h1>
+  <div class="stats">
+    <div><div class="stat-val">12 months</div><div class="stat-lbl">to job switch</div></div>
+    <div><div class="stat-val">25 hrs/week</div><div class="stat-lbl">learning time</div></div>
+    <div><div class="stat-val">~₹39,300</div><div class="stat-lbl">total investment</div></div>
+    <div><div class="stat-val">13 credentials</div><div class="stat-lbl">on resume</div></div>
+  </div>
+</div>
+
+<div class="tab-bar"><div class="tab-bar-inner" id="tabBar"></div></div>
+<div class="content" id="content"></div>
+
+<script>
+const C = { gold:'#E8C547', teal:'#3ECFCF', red:'#E85D47', muted:'#777' };
+
+const creds = [
+  {name:"Claude 101 + AI Fluency",brand:"Anthropic Academy",cost:"Free",costNote:"100% free · ~2–3 hours total",link:"https://anthropic.skilljar.com/page/anthropic-courses",when:"Week 1",cr:2,tag:"AI TOOLS",tc:"#C084FC",teaches:"Claude features · Prompt engineering · AI mental models · Practical workflows",why:"Not a resume credential — a daily force multiplier. Every other skill in this plan is faster to learn when you know how to use Claude well. Do this in Week 1. Takes 2 hours. Never look back.",free:true},
+  {name:"HubSpot Inbound Marketing",brand:"HubSpot Academy",cost:"Free",costNote:"100% free — do this before Marketing Hub cert. 4–5 hours total.",link:"https://academy.hubspot.com/courses/inbound-marketing",when:"Week 1–2",cr:3,tag:"FREE",tc:C.teal,teaches:"Inbound methodology · Content strategy · Buyer journey · Lead nurturing",why:"Prerequisite for the Marketing Hub cert. Done in 4–5 hours. Builds the vocabulary that makes every subsequent HubSpot cert faster.",free:true},
+  {name:"HubSpot Marketing Hub Software",brand:"HubSpot Academy",cost:"Free",costNote:"100% free",link:"https://academy.hubspot.com/courses/hubspot-marketing-hub-software",when:"Week 2–3",cr:3,tag:"FREE",tc:C.teal,teaches:"Marketing automation · CRM basics · Campaign reporting · Email workflows",why:"Fast win. Done in 2–3 weeks. Shows MarTech vocabulary on resume. Do Inbound Marketing cert first.",free:true},
+  {name:"Advanced Excel & Power Query",brand:"Microsoft / ExcelJet / Chandoo.org",cost:"Free",costNote:"Free at exceljet.net and chandoo.org · Official Microsoft training at microsoft.com/en-us/training",link:"https://exceljet.net",when:"Month 1–2",cr:3,tag:"FOUNDATION",tc:"#34D399",teaches:"VLOOKUP · INDEX-MATCH · Pivot Tables · Power Query · Conditional Formatting · Data Validation · Named Ranges",why:"Immediate value at Quarks from Week 1 — before any cert is earned. Every target company uses Excel for planning, reporting, and forecasting. Fastest skill to demonstrate tangible value in your current role. Start here, use it daily.",free:true},
+  {name:"Clay GTM Fundamentals",brand:"Clay University",cost:"Free",costNote:"100% free — official certification",link:"https://university.clay.com",when:"Month 1–2",cr:3,tag:"GTM TOOLS",tc:"#34D399",teaches:"Data enrichment · Lead lists · GTM workflows · Waterfall enrichment · AI columns",why:"Clay appears in almost every GTM Engineer job description right now. Free cert, fast win, direct recruiter signal. Do this alongside your HubSpot certs.",free:true},
+  {name:"HubSpot Operations Hub",brand:"HubSpot Academy",cost:"Free",costNote:"100% free",link:"https://academy.hubspot.com/courses/operations-hub-software",when:"Month 2–3",cr:3,tag:"FREE",tc:C.teal,teaches:"Data sync · RevOps automation · Custom properties · Workflow automation · Data quality",why:"GTM Engineers use Operations Hub, not just Marketing Hub. This is the stronger signal for the roles you're targeting. Follows naturally after Marketing Hub cert.",free:true},
+  {name:"Google Analytics 4 (GAIQ)",brand:"Google Skillshop",cost:"Free",costNote:"100% free",link:"https://skillshop.withgoogle.com/",when:"Month 3–4",cr:3,tag:"FREE",tc:C.teal,teaches:"GA4 setup · Events · Funnels · Reporting",why:"Every marketing role expects this. Gets it off the checklist fast.",free:true},
+  {name:"Make.com Automation Fundamentals",brand:"Make Academy",cost:"Free",costNote:"100% free",link:"https://academy.make.com",when:"Month 3–4",cr:2,tag:"AI TOOLS",tc:"#C084FC",teaches:"No-code automation · Webhooks · API integrations · Scenario building · Multi-step workflows",why:"No-code automation is the GTM Engineer's superpower. Connects HubSpot, Clay, Salesforce, and any API without writing code. Complements your Python track.",free:true},
+  {name:"Google Data Analytics Certificate",brand:"Google × Coursera",cost:"~₹20,000",costNote:"~₹4k/mo × 5 months · Financial aid available — apply at coursera.org/financial-aid",link:"https://www.coursera.org/professional-certificates/google-data-analytics",when:"Month 1–5",cr:5,tag:"ANCHOR",tc:C.gold,teaches:"SQL · Python basics · Tableau · Data cleaning · Spreadsheets",why:"Google's name on your resume. Globally recognised. Teaches exactly what you need — SQL, Python, and data thinking in one structured programme.",free:false},
+  {name:"CS50: Introduction to Computer Science",brand:"Harvard University × edX",cost:"Free",costNote:"Course is 100% free. Optional verified certificate ~$150 but not needed.",link:"https://cs50.harvard.edu/x/",when:"Month 3–8 · Saturdays only",cr:4,tag:"FOUNDATION",tc:"#818CF8",teaches:"C language · Memory & pointers · Data structures · Algorithms · Python · SQL · Web basics · How the internet works",why:"Harvard's name. Real CS depth. Once you write C and manage memory, every language and tool makes sense from first principles. The foundation of your T-shaped developer journey — not a tutorial, a genuine education.",free:true},
+  {name:"Salesforce Certified Administrator",brand:"Salesforce",cost:"~₹16,000",costNote:"Exam fee only. Study free on Trailhead. Practice tests: focusonforce.com ~₹2,000",link:"https://trailhead.salesforce.com/credentials/administrator",when:"Month 9–10",cr:5,tag:"HIGH VALUE",tc:C.red,teaches:"CRM architecture · Automation · Reports · Data management",why:"Single highest-credibility cert for MNC marketing/ops roles in India. Recruiters filter for this. Worth every rupee of the exam fee.",free:false},
+  {name:"Microsoft Power BI Data Analyst (PL-300)",brand:"Microsoft",cost:"~₹3,300",costNote:"Exam fee only. Microsoft Learn path is completely free.",link:"https://learn.microsoft.com/en-us/certifications/power-bi-data-analyst-associate/",when:"Month 11",cr:4,tag:"DATA",tc:"#A78BFA",teaches:"Data modelling · DAX · Dashboards · Business reporting",why:"Microsoft's official badge. Strong in enterprise environments. Differentiates you from pure marketers. Power BI is the dominant BI tool at your target MNCs in India.",free:false},
+  {name:"MBA",brand:"Your University",cost:"Ongoing",costNote:"Already enrolled · Completes in ~3 months",link:null,when:"Current · Ends Month 3",cr:4,tag:"IN PROGRESS",tc:C.muted,teaches:"Business strategy · Finance basics · Management",why:"Adds strategic credibility. Completes your marketer-to-engineer narrative. Once done, Sundays free up for IITM qualifier prep.",free:false},
+  {name:"IITM BS — Data Science & Engineering",brand:"IIT Madras",cost:"₹2–3 Lakhs total",costNote:"Spread over 3–4 years · Qualifier exam is free to attempt · Prep begins Month 3",link:"https://study.iitm.ac.in/ds/",when:"Qualifier Month 6–7 · Enrol Month 8–9",cr:5,tag:"PRIORITY",tc:"#F97316",teaches:"Statistics · ML · Data engineering · Programming · Math · Algorithms · Python (formal)",why:"IIT degree. Fully online. The credential that transforms a strong GTM career into a rare, irreplaceable hybrid profile. Qualifier prep starts Month 3, appear Month 6–7, enrol Month 8–9. The long game that makes everything else compound faster.",free:false},
+];
+
+const months = [
+  {range:"Month 1–2",phase:"Phase 1",color:C.gold,focus:"AI setup + First credentials + Advanced Excel + LinkedIn live + Clay GTM cert",
+   morning:["Week 1 only: Claude 101 on Anthropic Academy (2 hrs) — do this first, it makes every tool faster","Begin Google Data Analytics Certificate on Coursera (Foundations module)","Week 1–2: HubSpot Inbound Marketing cert (4–5 hrs total) → then Marketing Hub cert (2–3 weeks)","Parallel: Clay GTM Fundamentals cert at university.clay.com — 2–3 weeks, direct recruiter signal"],
+   evening:["Start Advanced Excel immediately — exceljet.net and chandoo.org. Pivot tables + VLOOKUP applicable at Quarks from Day 1","Set up LinkedIn profile — update headline to 'GTM Engineer & B2B Marketing | Building in public'","Write and publish 1 LinkedIn post per week — B2B marketing, GTM, your Quarks work","Apply Excel to your Quarks campaign data — build a proper pivot report this week"],
+   sat:null,sun:null,win:"HubSpot certified ✦ Clay GTM certified ✦ Advanced Excel started ✦ LinkedIn live ✦ 8 posts published"},
+  {range:"Month 3–4",phase:"Phase 1",color:C.gold,focus:"SQL deepens + GA4 + Ops Hub + Make.com + CS50 begins + MBA ends + IITM prep starts",
+   morning:["Google cert continues — Ask Questions with Data + Prepare Data modules (SQL deepens)","Complete GA4 certification via Google Skillshop (2–3 weeks)","Complete HubSpot Operations Hub cert — stronger GTM signal than Marketing Hub alone"],
+   evening:["Make.com Automation Fundamentals at academy.make.com — connects GTM tools without code","Build a SQL-based funnel report for Quarks — MQL to opportunity tracking","2 LinkedIn posts/week — start sharing your GTM work and learnings","Begin Salesforce Trailhead — create free Developer Org, start Admin Beginner trail"],
+   sat:"CS50 Week 1–2 · Watch lecture + complete problem set. Topic: C language, how memory works. 3–4 hrs dedicated.",
+   sun:"MBA ends Month 3 — IITM qualifier prep begins immediately. Month 3–4 Sunday focus: Mathematics foundations. Resources: Khan Academy (khanacademy.org/math) + NCERT Class 11–12 Maths (ncert.nic.in — free). Topics: Functions, Sequences & Series, Calculus basics, Matrices.",
+   win:"GA4 certified ✦ Ops Hub certified ✦ Make.com certified ✦ SQL report built ✦ CS50 started ✦ MBA done ✦ IITM prep begun"},
+  {range:"Month 5–6",phase:"Phase 2",color:C.teal,focus:"Google cert done + Python begins + CS50 mid-run + IITM prep deepens",
+   morning:["Finish Google Data Analytics Certificate — Analyse, Share, Act modules + Capstone","Google cert done → Begin Python: 'Automate the Boring Stuff' — free at automatetheboringstuff.com"],
+   evening:["Salesforce Admin Beginner trail continues on Trailhead","Build Google cert capstone project using Quarks data — this becomes Portfolio Project 1","3 LinkedIn posts/week — document your learning journey publicly"],
+   sat:"CS50 Week 3–6 · Arrays, algorithms, data structures, memory. Python week. Notice how Python makes more sense after C.",
+   sun:"IITM qualifier prep — Month 5–6 focus: Statistics + Computational Thinking. Statistics: Khan Academy Statistics (khanacademy.org/statistics) — mean, median, distributions, variance. Computational Thinking: IITM's own prep material at study.iitm.ac.in — flowcharts, algorithms, logic. Begin attempting previous year qualifier papers.",
+   win:"Google Data Analytics Certificate earned ✦ Portfolio Project 1 done ✦ Python started ✦ CS50 halfway ✦ IITM qualifier prep complete"},
+  {range:"Month 7–8",phase:"Phase 2",color:C.teal,focus:"Python deepens + JS basics + Power BI + CS50 final + IITM qualifier exam",
+   morning:["Python: pandas fundamentals — clean, merge, analyse marketing CSVs","Build a Python automation script for a real Quarks task (lead enrichment, report auto-send)","JavaScript basics (alongside Python) — variables, functions, DOM basics, fetch(). Foundation for GTM tags and vibe coding with Bolt.new / v0"],
+   evening:["Microsoft Learn — Power BI learning path at learn.microsoft.com (free)","Build a live Power BI marketing dashboard for Quarks — Portfolio Project 2","Salesforce Trailhead — complete Admin trail, move to Marketing Cloud Basics","Optional: Anthropic's 'Building with the Claude API' course — Python is now solid enough"],
+   sat:"CS50 Week 7–10 · SQL, web, final project. Build CS50 final project around a marketing data problem. This IS Portfolio Project 2B.",
+   sun:"Month 7: Appear for IITM BS Qualifier Exam at study.iitm.ac.in. If cleared — enrol for Month 8–9 batch. If deferred — one more month of prep and attempt next sitting. Month 8 onwards: Begin IITM Foundation coursework on Sundays.",
+   win:"CS50 completed ✦ Python automation shipped ✦ JS basics done ✦ Power BI dashboard live ✦ IITM qualifier cleared ✦ IITM enrolled"},
+  {range:"Month 9–10",phase:"Phase 3",color:C.red,focus:"Salesforce Admin exam — the big credential + IITM Foundation begins",
+   morning:["Salesforce Admin exam prep — Focus on Force practice tests (~₹2,000 at focusonforce.com)","Appear for Salesforce Certified Administrator exam (~₹16,000)"],
+   evening:["Document every quantified GTM outcome at Quarks — MQLs, pipeline influenced, campaigns run","Rewrite LinkedIn 'About' section with new identity and credentials","Start Microsoft Learn Power BI Data Analyst path for PL-300 prep"],
+   sat:"Post-CS50 Saturday project: Build one real web app using Bolt.new or v0 — a GTM dashboard or lead scoring tool. Use AI to generate, you to review and iterate. This IS Portfolio Project 3.",
+   sun:"IITM Foundation coursework — Statistics for Data Science + Computational Thinking modules. These directly reinforce your Python and SQL tracks.",
+   win:"Salesforce Admin Certified ✦ IITM Foundation underway ✦ Portfolio Project 3 in progress ✦ Resume updated"},
+  {range:"Month 11–12",phase:"Phase 3",color:C.red,focus:"PL-300 exam + Job hunt begins + IITM Foundation continues",
+   morning:["Appear for Microsoft Power BI PL-300 exam (~₹3,300)","Advanced Python — CRM API integrations, lead scoring scripts, attribution models"],
+   evening:["Full LinkedIn overhaul — new headline, banner, featured section with portfolio projects","Start applying: 3–5 roles/week — Marketing Ops, GTM Engineer, RevOps at MNCs + funded startups in NCR","Reach out to 5 people/week in target roles for informational conversations"],
+   sat:"Complete Portfolio Project 3 (web app) + Cursor / vibe coding deep dive — build real GTM tools with AI. Begin T-shaped developer practice: write Python code without AI assistance.",
+   sun:"IITM Foundation continues — Programming in Python (IITM's own course reinforces your Python track). Mathematics for Data Science module begins.",
+   win:"PL-300 certified ✦ Active job hunt ✦ IITM Foundation in progress ✦ Target: ₹20–28 LPA offer"},
+];
+
+let tab = 0, openCred = null, openMonth = 0;
+
+function e(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function stars(n,col){ return [1,2,3,4,5].map(i=>`<span style="color:${i<=n?col:'#444'};font-size:12px">★</span>`).join(''); }
+
+function overview(){
+  return `
+  <div style="background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.2);border-radius:14px;padding:22px;margin-bottom:24px">
+    <div class="callout-label" style="color:#F97316">UPDATED · IITM ON PRIORITY</div>
+    <div class="callout-title">IITM BS qualifier target: Month 6–7. Not Month 18–24.</div>
+    <div class="callout-body">MBA ends in 3 months. Qualifier prep begins on Sundays immediately after — Maths, Statistics, Computational Thinking, English. Three months of focused Sunday study is enough to clear it. Enrolling earlier means your IIT credential and your job switch happen closer together — everything compounds faster.</div>
+  </div>
+  <div style="background:rgba(232,197,71,.07);border:1px solid rgba(232,197,71,.2);border-radius:14px;padding:22px;margin-bottom:24px">
+    <div class="callout-label" style="color:#E8C547">DECISION MADE</div>
+    <div class="callout-title">Skip Scaler. Here's what ₹25,000–50,000 buys you instead:</div>
+    <div class="callout-body">Scaler places freshers and 0–4 year profiles. At 10 years, you won't get their placement pipeline. You'd pay ₹1.5–3 lakhs for content you can get for ₹39,000 — with <em>more credible brand names</em> (Google, Salesforce, Microsoft, Harvard, IIT Madras) on your resume.</div>
+  </div>
+  <div style="background:rgba(192,132,252,.07);border:1px solid rgba(192,132,252,.2);border-radius:14px;padding:22px;margin-bottom:24px">
+    <div class="callout-label" style="color:#C084FC">DEVELOPER TRAJECTORY</div>
+    <div class="callout-title">Vibe coder now → T-shaped developer by Year 2 → Full stack by Year 7–10</div>
+    <div class="callout-body">The plan starts with AI-assisted building (Bolt.new, v0, Cursor) for immediate results. But the goal is genuine coding ability — not permanent AI dependence. CS50 builds the foundation. Python depth follows. JS adds breadth. IITM formalises everything. By Year 3 you'll build real things independently. By Year 7–10, full-stack capable.</div>
+  </div>
+  <div style="background:rgba(129,140,248,.07);border:1px solid rgba(129,140,248,.2);border-radius:14px;padding:22px;margin-bottom:24px">
+    <div class="callout-label" style="color:#818CF8">FOUNDATION · CS LITERACY</div>
+    <div class="callout-title">CS50 runs on Saturdays, Month 3–8</div>
+    <div class="callout-body">Harvard's free CS course. Not a coding tutorial — a genuine computer science foundation. Teaches how computers, memory, data structures, and the internet <em>actually work</em>. The first real step on the T-shaped developer path. cs50.harvard.edu/x</div>
+  </div>
+  ${[{n:"01",title:"Build the Stack",period:"Months 1–12",color:C.gold,desc:"Learn SQL, Python, JS basics, Power BI. Get Google, Salesforce, Microsoft, Harvard certs. Advanced Excel from Week 1. CS50 on Saturdays (Month 3–8). IITM qualifier prep on Sundays (Month 3–6). Appear for IITM qualifier Month 6–7 and enrol Month 8–9. Stay at Quarks generating documented GTM wins. Post on LinkedIn weekly. Cost: ~₹39,300."},
+     {n:"02",title:"Switch & Grow",period:"Months 12–24",color:C.teal,desc:"Leave Quarks with credentials + documented wins + LinkedIn presence. Join MNC or funded startup in NCR as GTM Engineer / Marketing Ops. Target ₹20–28 LPA. IITM Foundation ongoing. T-shaped developer phase begins — deepen Python, build independently, explore React Native with Expo for mobile literacy."},
+     {n:"03",title:"Compound & Ascend",period:"Months 24–120+",color:C.red,desc:"IITM BS progresses toward degree. Target ₹35–65 LPA senior roles or consulting. Monetise personal brand. Genuine full-stack capability by Year 7–10. IIT degree + decade of GTM experience + coding ability = a profile that almost doesn't exist in the market. C-suite trajectory opens."}
+  ].map(p=>`<div class="phase-card" style="border-left:3px solid ${p.color}"><div class="phase-num" style="color:${p.color}">${p.n}</div><div><div class="phase-meta"><span style="font-size:17px">${p.title}</span><span class="phase-period" style="color:${p.color};background:${p.color}18">${p.period}</span></div><p style="font-size:13px;color:var(--muted);line-height:1.7">${p.desc}</p></div></div>`).join('')}
+  <div class="toolkit-card">
+    <div class="eyebrow-sm">VIBE CODING TOOLKIT → DEVELOPER TOOLKIT</div>
+    <div style="margin-bottom:10px">${['Bolt.new','v0 by Vercel','Cursor','Claude'].map(t=>`<span class="toolkit-pill">${t}</span>`).join('')}</div>
+    <div style="font-size:12px;color:var(--dim)">Start: AI-assisted building. Goal: genuine developer ability. React Native with Expo in Phase 2 for mobile literacy. Full-stack capability by Year 7–10 via IITM + consistent practice.</div>
+  </div>
+  <div class="companies-card">
+    <div class="eyebrow-sm">TARGET COMPANIES · NCR</div>
+    <div>${["Adobe","SAP","Salesforce","Sprinklr","CleverTap","LeadSquared","Gainsight","HubSpot India","Freshworks","Zoho","Razorpay","PhonePe","MoEngage","WebEngage"].map(c=>`<span class="company-pill">${c}</span>`).join('')}</div>
+    <div style="margin-top:14px;font-size:12px;color:var(--dim)">Look for: Marketing Operations · GTM Engineer · Revenue Marketing · Growth Marketing · RevOps</div>
+  </div>`;
+}
+
+function credentials(){
+  return `
+  <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px">13 credentials. Total cash outflow: <span style="color:var(--gold)">~₹39,300</span> — everything else is free. Tap each card to expand and get the direct link.</div>
+  <div class="budget-wrap">
+    <div class="budget-top">
+      <span style="font-size:11px;color:var(--muted);font-family:monospace">BUDGET USED</span>
+      <span style="font-size:11px;color:var(--gold);font-family:monospace">₹39,300 of ₹50,000</span>
+    </div>
+    <div class="budget-track"><div class="budget-fill" style="width:78%"></div></div>
+    <div style="font-size:11px;color:var(--dim);margin-top:8px">₹10,700 buffer remaining — keep for Salesforce practice tests, exam retry, or Coursera financial aid gap</div>
+  </div>
+  ${creds.map((c,i)=>`
+  <div class="cred-card" id="cc${i}" onclick="tCred(${i})" style="${openCred===i?`border-color:${c.tc}40`:''}">
+    <div class="cred-header">
+      <div style="flex:1">
+        <div class="cred-tags">
+          <span class="tag-pill" style="background:${c.tc}20;color:${c.tc}">${c.tag}</span>
+          <span style="font-size:10px;color:var(--dim);font-family:monospace">${e(c.when)}</span>
+        </div>
+        <div class="cred-name">${e(c.name)}</div>
+        <div class="cred-brand">${e(c.brand)}</div>
+      </div>
+      <div style="text-align:right;min-width:80px">
+        <div style="font-size:15px;font-family:monospace;color:${c.free?'var(--teal)':'var(--text)'}">${e(c.cost)}</div>
+        <span style="font-size:12px">${stars(c.cr,C.gold)}</span>
+      </div>
+    </div>
+    <div class="cred-body${openCred===i?' open':''}">
+      <div class="sect-label">WHAT YOU'LL LEARN</div>
+      <div style="font-size:13px;color:var(--muted);font-family:monospace">${e(c.teaches)}</div>
+      <div class="sect-label">WHY IT MATTERS</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6">${e(c.why)}</div>
+      ${c.link?`<div class="sect-label">DIRECT LINK</div><a class="cred-link" href="${c.link}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${c.link} ↗</a>`:''}
+      <div style="font-size:12px;color:var(--dim);font-family:monospace;margin-top:10px">${c.free?'🔗':'💡'} ${e(c.costNote)}</div>
+    </div>
+  </div>`).join('')}`;
+}
+
+function monthly(){
+  return `
+  <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7">Tap any month to expand. Morning: technical learning (1.5 hrs). Evening: application + output (1.5 hrs). Saturday: CS50 / project work (5 hrs). Sunday: IITM qualifier prep from Month 3 (5 hrs).</div>
+  ${months.map((m,i)=>`
+  <div class="month-card" id="mc${i}" onclick="tMonth(${i})" style="${openMonth===i?`border-color:${m.color}50`:''}">
+    <div class="month-header">
+      <div>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+          <span style="font-size:10px;font-family:monospace;color:${m.color};background:${m.color}18;padding:2px 10px;border-radius:100px;letter-spacing:1px">${m.phase}</span>
+          <span style="font-size:13px;font-family:monospace;color:var(--muted)">${m.range}</span>
+        </div>
+        <div style="font-size:15px">${e(m.focus)}</div>
+      </div>
+      <div style="color:var(--dim);font-size:18px;min-width:20px;text-align:center">${openMonth===i?'−':'+'}</div>
+    </div>
+    <div class="month-body${openMonth===i?' open':''}">
+      <div class="time-slot">
+        <div class="slot-label" style="color:#60A5FA">◐ &nbsp;Morning · 1.5 hrs</div>
+        ${m.morning.map(t=>`<div class="slot-item"><span class="slot-arrow" style="color:#60A5FA">▸</span><span class="slot-text">${e(t)}</span></div>`).join('')}
+      </div>
+      <div class="time-slot">
+        <div class="slot-label" style="color:#FB923C">◑ &nbsp;Evening · 1.5 hrs</div>
+        ${m.evening.map(t=>`<div class="slot-item"><span class="slot-arrow" style="color:#FB923C">▸</span><span class="slot-text">${e(t)}</span></div>`).join('')}
+      </div>
+      ${m.sat?`<div class="sat-block"><div style="font-size:11px;letter-spacing:2px;color:#818CF8;margin-bottom:8px;font-family:monospace">◈ &nbsp;Saturday · 5 hrs</div><div style="font-size:13px;color:var(--muted);line-height:1.6">${e(m.sat)}</div></div>`:''}
+      ${m.sun?`<div class="sun-block"><div style="font-size:11px;letter-spacing:2px;color:#F97316;margin-bottom:8px;font-family:monospace">◉ &nbsp;Sunday · 5 hrs · IITM</div><div style="font-size:13px;color:var(--muted);line-height:1.6">${e(m.sun)}</div></div>`:''}
+      <div class="win-row" style="background:${m.color}10">
+        <span style="color:${m.color};font-size:12px">✦</span>
+        <span style="font-size:12px;color:${m.color};font-family:monospace">${e(m.win)}</span>
+      </div>
+    </div>
+  </div>`).join('')}`;
+}
+
+function schedule(){
+  return `
+  <div class="sched-slot" style="border-left:3px solid #60A5FA">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><span style="font-size:20px;color:#60A5FA">◐</span><span style="font-family:monospace;font-size:14px;color:#60A5FA">Morning · 1.5 hrs</span></div>
+    <div style="font-size:13px;color:var(--dim);font-style:italic;margin-bottom:16px">No distractions. Close everything. Structured learning only.</div>
+    ${["Months 1–2: Google cert (45 min) + HubSpot / Clay / Excel (45 min)","Months 3–5: Google cert continues (45 min) + Python begins (45 min)","Months 5–8: Python + pandas (45 min) + JS basics / Salesforce Trailhead (45 min)","Months 8–12: Power BI / exam prep (45 min) + Advanced Python / projects (45 min)"].map(t=>`<div class="slot-item"><span class="slot-arrow" style="color:#60A5FA">▸</span><span class="slot-text">${t}</span></div>`).join('')}
+  </div>
+  <div class="sched-slot" style="border-left:3px solid #FB923C;margin-bottom:24px">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><span style="font-size:20px;color:#FB923C">◑</span><span style="font-family:monospace;font-size:14px;color:#FB923C">Evening · 1.5 hrs</span></div>
+    <div style="font-size:13px;color:var(--dim);font-style:italic;margin-bottom:16px">Apply what you learned. Build things. Create output.</div>
+    ${["First 45 min: Apply learning at Quarks — build reports, automate tasks, run GTM experiments","Next 30 min: Work on portfolio project or documentation","Last 15 min: Write LinkedIn post OR engage with GTM / MarTech community"].map(t=>`<div class="slot-item"><span class="slot-arrow" style="color:#FB923C">▸</span><span class="slot-text">${t}</span></div>`).join('')}
+  </div>
+  <div class="rhythm-card">
+    <div class="eyebrow-sm">WEEKLY RHYTHM · 25 HRS/WEEK</div>
+    ${[["Mon–Fri","#60A5FA","1.5 hrs morning: structured learning. 1.5 hrs evening: apply at Quarks + project work. Total: 3 hrs/day × 5 days = 15 hrs."],["Saturday","#818CF8","5 hrs. Month 3–8: CS50 lecture + problem set (3 hrs) + IITM prep or vibe coding project (2 hrs). Month 9+: Portfolio project build with Bolt.new / Cursor (3 hrs) + IITM coursework (2 hrs)."],["Sunday","#F97316","5 hrs. Month 3–7: IITM qualifier prep — Maths, Statistics, Computational Thinking (3 hrs) + LinkedIn batch-write posts (1 hr) + review (1 hr). Month 8+: IITM Foundation coursework (3 hrs) + LinkedIn + review (2 hrs)."]].map(([d,c,t])=>`
+    <div class="rhythm-row"><span style="font-family:monospace;font-size:12px;color:${c};min-width:70px;padding-top:2px">${d}</span><span style="font-size:13px;color:var(--muted);line-height:1.6">${t}</span></div>`).join('')}
+  </div>
+  <div class="li-card">
+    <div style="font-size:10px;letter-spacing:3px;color:var(--teal);margin-bottom:12px">LINKEDIN POSTING CADENCE</div>
+    ${[["Months 1–3","1 post/week","B2B marketing tips, GTM basics, your Quarks learnings"],["Months 4–6","2 posts/week","Share what you're building, SQL/Python learnings, campaign data"],["Months 7–12","3 posts/week","Portfolio projects, cert journey, IITM journey, GTM Engineering insights"]].map(([p,f,t])=>`
+    <div class="li-row"><span style="font-family:monospace;font-size:12px;color:var(--teal);min-width:90px">${p}</span><span style="font-family:monospace;font-size:12px;min-width:90px">${f}</span><span style="font-size:12px;color:var(--muted);flex:1">${t}</span></div>`).join('')}
+  </div>`;
+}
+
+function endgame(){
+  return `
+  <div class="income-card">
+    <div class="eyebrow-sm">INCOME TRAJECTORY</div>
+    ${[{l:"Now at Quarks",r:"~₹8–12 LPA",b:10,c:"#444"},{l:"Year 1 (Month 12–15)",r:"₹20–28 LPA",b:35,c:C.gold},{l:"Year 2–3 (IITM + MNC experience)",r:"₹28–40 LPA",b:55,c:C.teal},{l:"Year 3–5 (T-shaped developer + senior)",r:"₹40–65 LPA",b:72,c:C.red},{l:"Year 7–10 (Full-stack + IIT + C-suite)",r:"₹80–150 LPA+",b:92,c:"#F97316"}].map(row=>`
+    <div class="income-row">
+      <div class="income-meta"><span style="font-size:13px;color:var(--muted)">${row.l}</span><span style="font-size:13px;font-family:monospace;color:${row.c}">${row.r}</span></div>
+      <div class="income-track"><div class="income-fill" style="width:${row.b}%;background:${row.c}"></div></div>
+    </div>`).join('')}
+  </div>
+  <div class="iitm-card">
+    <div style="font-size:10px;letter-spacing:3px;color:#F97316;margin-bottom:12px">IITM QUALIFIER PREP · TARGET MONTH 6–7</div>
+    <div style="font-size:18px;margin-bottom:10px">Ready for IITM BS in 6 months</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px">MBA ends Month 3. Start qualifier prep on Sundays immediately. The qualifier tests 4 subjects — all approachable with 3 months of focused study. Appear at the Month 6–7 sitting. Enrol for Month 8–9 batch.</div>
+    ${[{s:"Mathematics",c:"Functions · Sequences · Calculus (diff & integral) · Matrices · Probability",r:"Khan Academy — khanacademy.org/math + NCERT Class 11–12 at ncert.nic.in (free)",t:"Month 3–4"},{s:"Statistics",c:"Mean/Median/Mode · Distributions · Variance · Std Dev · Basic hypothesis",r:"Khan Academy Statistics — khanacademy.org/statistics (free)",t:"Month 4–5"},{s:"Computational Thinking",c:"Flowcharts · Algorithms · Logic · No coding required — just thinking",r:"IITM prep material + sample papers — study.iitm.ac.in (free)",t:"Month 4–5"},{s:"English",c:"Reading comprehension · Grammar — straightforward given your background",r:"IITM previous year papers — study.iitm.ac.in (free)",t:"Month 5–6"}].map(sub=>`
+    <div class="subject-card">
+      <div class="subject-top"><span style="font-size:13px;color:#F97316;font-family:monospace">${sub.s}</span><span style="font-size:11px;color:var(--dim);font-family:monospace">${sub.t}</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">${sub.c}</div>
+      <div style="font-size:11px;color:var(--dim)">📚 ${sub.r}</div>
+    </div>`).join('')}
+    <div class="iitm-meta-grid">
+      ${[["Official site","study.iitm.ac.in/ds"],["Prep starts","Month 3 (post-MBA)"],["Target sitting","Month 6–7"],["Enrolment","Month 8–9"]].map(([k,v])=>`
+      <div class="iitm-meta-card"><div style="font-size:10px;color:var(--dim);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase">${k}</div><div style="font-size:13px;color:#F97316;font-family:monospace">${v}</div></div>`).join('')}
+    </div>
+  </div>
+  <div class="dev-card">
+    <div style="font-size:10px;letter-spacing:3px;color:#C084FC;margin-bottom:12px">DEVELOPER TRAJECTORY</div>
+    <div style="font-size:18px;margin-bottom:14px">Vibe Coder → T-Shaped → Full Stack</div>
+    ${[{ph:"Now → Year 1",lb:"Vibe Coder",co:"#C084FC",de:"AI-assisted building with Bolt.new, v0, Cursor. CS50 foundations. Python + SQL core skills built. Building real tools — not blocked by syntax."},{ph:"Year 1–3",lb:"T-Shaped Developer",co:C.teal,de:"After job switch. Python depth — build independently without AI. JS + React understanding. IITM Foundation provides formal structure. Real projects beyond AI assistance."},{ph:"Year 3–7",lb:"Full-Stack Capable",co:C.gold,de:"IITM BS deepens — algorithms, ML, data engineering. Backend + frontend builds. Can architect and ship complete products. AI is an accelerator, no longer a crutch."},{ph:"Year 7–10",lb:"Complete Engineer",co:"#F97316",de:"IIT degree + decade of GTM experience + full-stack ability. A profile that almost doesn't exist in the market. C-suite or independent consulting at ₹1 crore+ total compensation."}].map(r=>`
+    <div class="traj-row" style="border-left:3px solid ${r.co}">
+      <div class="traj-phase"><div style="font-size:10px;color:${r.co};font-family:monospace">${r.ph}</div><div style="font-size:12px;font-weight:500;margin-top:2px">${r.lb}</div></div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6">${r.de}</div>
+    </div>`).join('')}
+  </div>
+  <div class="triggers-card">
+    <div class="eyebrow-sm">WHEN TO LEAVE QUARKS — IN ORDER</div>
+    ${[["1st trigger",C.gold,"60–80%+ offer arrives before Month 12. Take it. Don't wait."],["2nd trigger",C.teal,"GTM win documented + Google cert + Salesforce cert done. Active hunt begins Month 10."],["3rd trigger",C.red,"3 years total tenure reached (Month 12 for you). Leave regardless."]].map(([l,c,d])=>`
+    <div class="trigger-row"><span class="trigger-label" style="background:${c}18;color:${c}">${l}</span><span style="font-size:13px;color:var(--muted);line-height:1.6">${d}</span></div>`).join('')}
+  </div>
+  <div class="headline-card">
+    <div style="font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:10px">YOUR LINKEDIN HEADLINE — USE THIS NOW</div>
+    <div style="font-family:monospace;font-size:14px;line-height:1.8">GTM Engineer &amp; B2B Marketing Strategist<br><span style="color:var(--muted)">Python · SQL · HubSpot · Salesforce · Clay | Demand Gen &amp; Revenue Marketing | Building in public</span></div>
+  </div>
+  <div class="north-star">
+    <div class="eyebrow-sm">NORTH STAR · REMINDER TO SELF</div>
+    <div style="font-size:15px;color:var(--dim);margin-bottom:10px">The 12-year vision</div>
+    <div style="font-size:13px;color:var(--dim);line-height:1.8">Full-stack developer by Year 7–10.<br>PhD by Year 12.<br><br>These are not in the active plan — they are the horizon that explains why the daily choices matter. Every certification, every line of code, every LinkedIn post is a deliberate step toward a profile that most people never intentionally build. You are building it on purpose, from a plan written in May 2026.</div>
+  </div>`;
+}
+
+const tabs = [
+  {label:'Overview',fn:overview},
+  {label:'Credentials',fn:credentials},
+  {label:'Month by Month',fn:monthly},
+  {label:'Daily Schedule',fn:schedule},
+  {label:'Endgame',fn:endgame},
+];
+
+function tCred(i){ openCred = openCred===i ? null : i; render(); }
+function tMonth(i){ openMonth = openMonth===i ? -1 : i; render(); }
+function switchTab(i){ tab=i; openCred=null; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function render(){
+  document.getElementById('tabBar').innerHTML = tabs.map((t,i)=>
+    `<button class="tab-btn${tab===i?' active':''}" onclick="switchTab(${i})">${t.label}</button>`).join('');
+  document.getElementById('content').innerHTML = tabs[tab].fn();
+}
+
+render();
+</script>
+</body>
+</html>
